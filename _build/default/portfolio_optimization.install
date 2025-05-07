@@ -1,8 +1,0 @@
-lib: [
-  "_build/install/default/lib/portfolio_optimization/META"
-  "_build/install/default/lib/portfolio_optimization/dune-package"
-  "_build/install/default/lib/portfolio_optimization/opam"
-]
-bin: [
-  "_build/install/default/bin/portfolio_optimization"
-]
