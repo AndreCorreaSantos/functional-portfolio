@@ -10,7 +10,7 @@ open System.Reflection
 [<assembly: System.Reflection.AssemblyCompanyAttribute("PortfolioOptimization")>]
 [<assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")>]
 [<assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")>]
-[<assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+759a430ced2703bf38af202f136e58cf31204ab0")>]
+[<assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+33bfb5be64ba8be0c0f398080613c72e58db8391")>]
 [<assembly: System.Reflection.AssemblyProductAttribute("PortfolioOptimization")>]
 [<assembly: System.Reflection.AssemblyTitleAttribute("PortfolioOptimization")>]
 [<assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")>]

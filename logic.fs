@@ -2,6 +2,7 @@ module Logic
 
 open System
 open System.Collections.Generic
+open System.Linq
 
 let getSharpe (assets: string list) (weights: float[]) (rfr: float) (data: Map<string, float list>) =
     let assetReturns =
@@ -31,3 +32,20 @@ let getSharpe (assets: string list) (weights: float[]) (rfr: float) (data: Map<s
     let annualizedStd = stdDev * sqrt 252.0
 
     (annualizedReturn - rfr) / annualizedStd
+
+let getCombinations (assets: string list) (n: int) : string list list =
+    let rec comb k list =
+        match k, list with
+        | 0, _ -> [ [] ]
+        | _, [] -> []
+        | k, x::xs ->
+            let withX = comb (k - 1) xs |> List.map (fun tail -> x :: tail)
+            let withoutX = comb k xs
+            withX @ withoutX
+    comb n assets
+
+let getRandomWeights (n: int) : float[] =
+    let rnd = Random()
+    let rawWeights = Array.init n (fun _ -> rnd.NextDouble())
+    let total = rawWeights |> Array.sum
+    rawWeights |> Array.map (fun w -> w / total)

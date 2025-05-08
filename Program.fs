@@ -5,13 +5,6 @@ open Parser
 open Logic
 open System
 
-/// returns normalized random weights array 
-let getRandomWeights n =
-    let rng = Random()
-    let raw = Array.init n (fun _ -> rng.NextDouble())
-    let total = Array.sum raw
-    raw |> Array.map (fun x -> x / total)
-
 [<EntryPoint>]
 let main _ =
     let filePath = "dow_returns_2024_h2.csv"
@@ -21,15 +14,25 @@ let main _ =
         match parseAssetPrices csvContent with
         | Ok priceMap ->
             let allAssets = priceMap |> Map.toList |> List.map fst
-            let selectedAssets = allAssets |> List.take 25
-            let weights = getRandomWeights selectedAssets.Length
             let rfr = 0.0
 
-            let sharpe = getSharpe selectedAssets weights rfr priceMap
+            let combinations = getCombinations allAssets 25
+            let mutable bestSharpe = Double.MinValue
+            let mutable bestAssets = []
+            let mutable bestWeights = [||]
 
-            printfn "Sharpe ratio for selected assets: %f" sharpe
-            printfn "Assets: %A" selectedAssets
-            printfn "Weights: %A" weights
+            for combo in combinations do
+                for _ in 1 .. 1000 do
+                    let weights = getRandomWeights combo.Length
+                    let sharpe = getSharpe combo weights rfr priceMap
+                    if sharpe > bestSharpe then
+                        bestSharpe <- sharpe
+                        bestAssets <- combo
+                        bestWeights <- weights
+
+            printfn "Best Sharpe Ratio: %f" bestSharpe
+            printfn "Assets: %A" bestAssets
+            printfn "Weights: %A" bestWeights
 
             0
 
