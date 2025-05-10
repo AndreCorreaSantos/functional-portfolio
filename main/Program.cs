@@ -13,7 +13,6 @@ class Program
 {
     static Dictionary<string, List<float>> readCsv(string filePath)
     {
-        Console.WriteLine("Reading CSV...");
         using (var reader = new StreamReader(filePath))
         using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
@@ -46,39 +45,22 @@ class Program
                 }
             }
 
-            Console.WriteLine("Finished reading CSV.");
             return dataMap;
         }
     }
 
     static void Main(string[] args)
     {
-        Console.WriteLine("Starting program...");
-
         string filePath = "dow_returns_2024_h2.csv";
         var returns = readCsv(filePath);
-        Console.WriteLine("Loaded returns.");
-
         var assetNames = new List<string>(returns.Keys);
-        Console.WriteLine($"Found {assetNames.Count} asset names.");
-
+        float rfr = 0.0f;
         int numberAssets = 25;
 
-        Console.WriteLine("Converting asset names to F# list...");
         var fsharpAssetNames = ListModule.OfSeq(assetNames);
-
-        Console.WriteLine("Generating random weights...");
         var fsharpWeights = Core.getRandomWeights(numberAssets);
-        Console.WriteLine("Random weights generated.");
-
-        // Console.WriteLine("Getting combinations...");
         // var combinations = Core.getCombinations(fsharpAssetNames, numberAssets);
-        // Console.WriteLine("Combinations retrieved.");
-
-        var selectedAssets = ListModule.OfSeq(assetNames.GetRange(0,25));
-        Console.WriteLine("Selected assets extracted.");
-
-        Console.WriteLine("Converting returns to F# map...");
+        var selectedAssets = ListModule.OfSeq(assetNames.GetRange(0, 25));
         var fsharpReturns = MapModule.OfSeq(
             returns.Select(kvp =>
                 new Tuple<string, FSharpList<double>>(
@@ -87,10 +69,8 @@ class Program
                 )
             )
         );
-        Console.WriteLine("Converted returns to F# map.");
 
-        Console.WriteLine("Calculating Sharpe ratio...");
-        var sharpe = Core.getSharpe(selectedAssets, fsharpWeights, 0.0, fsharpReturns);
-        Console.WriteLine($"Sharpe ratio: {sharpe}");
+        var sharpe = Core.getBestSharpe(fsharpAssetNames, fsharpReturns, rfr, numberAssets);
+        Console.WriteLine($"SHARPE {sharpe}");
     }
 }
