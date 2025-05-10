@@ -1,0 +1,11 @@
+/home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/CoreLib.fsproj.AssemblyReference.cache
+/home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/CoreLib.AssemblyInfoInputs.cache
+/home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/CoreLib.AssemblyInfo.fs
+/home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/CoreLib.fsproj.CoreCompileInputs.cache
+/home/andre/funcional/portfolio-optimization/CoreLib/bin/Debug/net9.0/CoreLib.deps.json
+/home/andre/funcional/portfolio-optimization/CoreLib/bin/Debug/net9.0/CoreLib.dll
+/home/andre/funcional/portfolio-optimization/CoreLib/bin/Debug/net9.0/CoreLib.pdb
+/home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/CoreLib.dll
+/home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/refint/CoreLib.dll
+/home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/CoreLib.pdb
+/home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/ref/CoreLib.dll

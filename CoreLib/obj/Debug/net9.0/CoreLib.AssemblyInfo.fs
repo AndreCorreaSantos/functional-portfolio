@@ -7,11 +7,11 @@ open System
 open System.Reflection
 
 
-[<assembly: System.Reflection.AssemblyCompanyAttribute("PortfolioOptimization")>]
+[<assembly: System.Reflection.AssemblyCompanyAttribute("CoreLib")>]
 [<assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")>]
 [<assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")>]
-[<assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+08ed050b56fd4f00ec09b05d3aa77257515693fb")>]
-[<assembly: System.Reflection.AssemblyProductAttribute("PortfolioOptimization")>]
-[<assembly: System.Reflection.AssemblyTitleAttribute("PortfolioOptimization")>]
+[<assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+82ab621a1378fce4258e06e55a7d8f41e53bc799")>]
+[<assembly: System.Reflection.AssemblyProductAttribute("CoreLib")>]
+[<assembly: System.Reflection.AssemblyTitleAttribute("CoreLib")>]
 [<assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")>]
 do()
