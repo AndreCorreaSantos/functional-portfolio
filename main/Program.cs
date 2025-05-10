@@ -1,16 +1,19 @@
 using System;
-using CsvHelper;
-using CsvHelper.Configuration;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using CsvHelper;
+using CsvHelper.Configuration;
+using CoreLib;
+using Microsoft.FSharp.Collections;
+using Microsoft.FSharp.Core;
 
 class Program
 {
-
-
-    static Dictionary<string, List<float>> readCsv(string filePath){
+    static Dictionary<string, List<float>> readCsv(string filePath)
+    {
+        Console.WriteLine("Reading CSV...");
         using (var reader = new StreamReader(filePath))
         using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
         {
@@ -42,20 +45,52 @@ class Program
                     }
                 }
             }
+
+            Console.WriteLine("Finished reading CSV.");
             return dataMap;
         }
     }
 
     static void Main(string[] args)
     {
+        Console.WriteLine("Starting program...");
+
         string filePath = "dow_returns_2024_h2.csv";
+        var returns = readCsv(filePath);
+        Console.WriteLine("Loaded returns.");
 
-        Dictionary<string,List<float>> returns = readCsv(filePath);
+        var assetNames = new List<string>(returns.Keys);
+        Console.WriteLine($"Found {assetNames.Count} asset names.");
 
-        foreach (var entry in returns)
-        {
-            Console.WriteLine($"{entry.Key}: {string.Join(", ", entry.Value)}");
-        }
+        int numberAssets = 25;
+
+        Console.WriteLine("Converting asset names to F# list...");
+        var fsharpAssetNames = ListModule.OfSeq(assetNames);
+
+        Console.WriteLine("Generating random weights...");
+        var fsharpWeights = Core.getRandomWeights(numberAssets);
+        Console.WriteLine("Random weights generated.");
+
+        // Console.WriteLine("Getting combinations...");
+        // var combinations = Core.getCombinations(fsharpAssetNames, numberAssets);
+        // Console.WriteLine("Combinations retrieved.");
+
+        var selectedAssets = ListModule.OfSeq(assetNames.GetRange(0,25));
+        Console.WriteLine("Selected assets extracted.");
+
+        Console.WriteLine("Converting returns to F# map...");
+        var fsharpReturns = MapModule.OfSeq(
+            returns.Select(kvp =>
+                new Tuple<string, FSharpList<double>>(
+                    kvp.Key,
+                    ListModule.OfSeq(kvp.Value.Select(v => (double)v))
+                )
+            )
+        );
+        Console.WriteLine("Converted returns to F# map.");
+
+        Console.WriteLine("Calculating Sharpe ratio...");
+        var sharpe = Core.getSharpe(selectedAssets, fsharpWeights, 0.0, fsharpReturns);
+        Console.WriteLine($"Sharpe ratio: {sharpe}");
     }
 }
-
