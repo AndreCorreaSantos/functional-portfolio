@@ -62,6 +62,7 @@ module Core =
                     withoutX
         comb n assets [] []
 
+    // thread safe random array generator
     let rnd = System.Threading.ThreadLocal(fun () -> Random())
 
     let getRandomWeights (n: int) : float[] =
@@ -88,7 +89,7 @@ module Core =
                 let transposedReturns = transpose assetReturns  
 
                 let bestPortfolio =
-                    Array.init nWeights (fun _ ->
+                    Array.Parallel.init nWeights (fun _ ->
                         let weights = getRandomWeights combination.Length
                         let sharpe = getSharpe weights transposedReturns
                         { Assets = combination; Weights = weights; Sharpe = sharpe })
