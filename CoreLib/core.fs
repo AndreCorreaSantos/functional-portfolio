@@ -48,17 +48,17 @@ module Core =
 
     // wrapper to inner recursive function
     let getCombinations (assets: string list) (n: int) : string list list =
-        //  recursive function to generate combinations -> sort of backtracking that generates all combinations without their permutations
-        // k is the number of elements to choose from
-        let rec comb k list =
+        let rec comb (k: int) (list: string list) (current: string list) (acc: string list list) =
             match k, list with
-            | 0, _ -> [ [] ]
-            | _, [] -> []
+            | 0, _ -> current :: acc
+            | _, [] -> acc
             | k, x::xs ->
-                let withX = comb (k - 1) xs |> List.map (fun tail -> x :: tail)
-                let withoutX = comb k xs
-                withX @ withoutX
-        comb n assets
+                if xs.Length + 1 < k then comb k xs current acc
+                else
+                    let withX = comb (k - 1) xs (x :: current) acc
+                    let withoutX = comb k xs current withX
+                    withoutX
+        comb n assets [] []
 
     let getRandomWeights (n: int) : float list =
         let rnd = Random()
@@ -67,7 +67,7 @@ module Core =
         rawWeights |> List.map (fun w -> w / total)
 
 
-    let getBestSharpeSeq (assets: string list) (returns : Map<string, float list>) (n : int) : Portfolio = 
+    let getBestSharpe (assets: string list) (returns : Map<string, float list>) (n : int) : string list list = 
         // recursive function to iterate over all combinations of assets and return the best sharpe
         let rec getBestSharpe (assets: string list) (combinations : string list list) (n : int) (best: Portfolio) : Portfolio  =
             match combinations with
@@ -80,13 +80,14 @@ module Core =
                     getBestSharpe assets rest n newBest
                 else
                     getBestSharpe assets rest n best
-                
-        let combinations = getCombinations assets n
+        
+        getCombinations assets n
+        // let combinations = getCombinations assets n
 
-        let initialPortfolio = {
-            Assets = []
-            Weights = []
-            Sharpe = System.Double.NegativeInfinity
-        }
+        // let initialPortfolio = {
+        //     Assets = []
+        //     Weights = []
+        //     Sharpe = System.Double.NegativeInfinity
+        // }
 
-        getBestSharpe assets combinations n initialPortfolio
+        // getBestSharpe assets combinations n initialPortfolio

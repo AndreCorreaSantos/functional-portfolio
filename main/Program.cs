@@ -22,7 +22,9 @@ class Program
         {
             var records = csv.GetRecords<dynamic>().ToList();
             var dataMap = new Dictionary<string, List<float>>();
-            var headers = ((IDictionary<string, object>)records.First()).Keys.ToList();
+
+            // get all headers skipping the first one - date
+            var headers = ((IDictionary<string, object>)records.First()).Keys.Skip(1).ToList();
 
             foreach (var header in headers)
             {
@@ -40,7 +42,7 @@ class Program
                     }
                     else
                     {
-                        dataMap[header].Add(0);
+                        dataMap[header].Add(0); // or throw/log warning if needed
                     }
                 }
             }
@@ -49,12 +51,13 @@ class Program
         }
     }
 
+
     static void Main(string[] args)
     {
         string filePath = "dow_returns_2024_h2.csv";
         var returns = readCsv(filePath);
         var assetNames = new List<string>(returns.Keys);
-        int numberAssets = 5;
+        int numberAssets = 25;
 
         var fsharpAssetNames = ListModule.OfSeq(assetNames);
         var fsharpWeights = Core.getRandomWeights(numberAssets);
@@ -70,22 +73,30 @@ class Program
     
         var stopwatch = Stopwatch.StartNew(); 
 
-        var portfolio = Core.getBestSharpeSeq(fsharpAssetNames, fsharpReturns, numberAssets);
+        var portfolio = Core.getBestSharpe(fsharpAssetNames, fsharpReturns, numberAssets);
 
         stopwatch.Stop();
-
+        
+        foreach (var i in assetNames)
+        {
+            Console.Write($"asset name: {i} \n");
+        }
+        Console.WriteLine($"\nasset names: {assetNames.Count}\n");
+        Console.WriteLine($"\nnumber assets: {numberAssets}\n");
+        Console.WriteLine($"\nnumber combinations: {portfolio.Length}\n");
+        Console.WriteLine($"\ncomb 0: {portfolio.First()}\n");
         Console.WriteLine($"\nExecution Time: {stopwatch.Elapsed.TotalSeconds:F3} seconds\n");
 
-        var assets = portfolio.Assets.ToList();
-        var weights = portfolio.Weights.ToList();
-        var sharpeValue = portfolio.Sharpe;
+        // var assets = portfolio.Assets.ToList();
+        // var weights = portfolio.Weights.ToList();
+        // var sharpeValue = portfolio.Sharpe;
 
-        Console.WriteLine("Best Portfolio:");
-        for (int i = 0; i < assets.Count; i++)
-        {
-            Console.WriteLine($"  {assets[i]}: {weights[i]:F4}");
-        }
+        // Console.WriteLine("Best Portfolio:");
+        // for (int i = 0; i < assets.Count; i++)
+        // {
+        //     Console.WriteLine($"  {assets[i]}: {weights[i]:F4}");
+        // }
 
-        Console.WriteLine($"Sharpe Ratio: {sharpeValue:F4}");
+        // Console.WriteLine($"Sharpe Ratio: {sharpeValue:F4}");
     }
 }
