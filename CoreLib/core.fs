@@ -25,7 +25,6 @@ module Core =
                 [ for j in 0 .. colCount - 1 ->
                     [ for i in 0 .. rowCount - 1 -> matrixArr.[i].[j] ] ]
 
-        // understand better why we have to transpose the matrix here   
         let dailyReturns =
             assetReturns
             |> transpose
@@ -66,22 +65,28 @@ module Core =
         let total = rawWeights |> List.sum
         rawWeights |> List.map (fun w -> w / total)
 
-
-    let getBestSharpe (assets: string list) (returns : Map<string, float list>) (n : int) : Portfolio = 
-        // recursive function to iterate over all combinations of assets and return the best sharpe
-        let rec getBestSharpe (assets: string list) (combinations : string list list) (n : int) (best: Portfolio) : Portfolio  =
+    let getBestSharpeSeq (assets: string list) (returns: Map<string, float list>) (nAssets: int) (nWeights: int) : Portfolio = 
+        let rec getBestSharpe (combinations: string list list) (best: Portfolio) : Portfolio =
             match combinations with
             | [] -> best
-            | combination::rest -> 
-                let w = getRandomWeights n 
-                let sharpe = getSharpe combination w returns
-                if sharpe > best.Sharpe then
-                    let newBest = { Assets = combination; Weights = w; Sharpe = sharpe }
-                    getBestSharpe assets rest n newBest
-                else
-                    getBestSharpe assets rest n best
-        
-        let combinations = getCombinations assets n
+            | combination::rest ->
+                // Generate multiple weights and find best Sharpe among them
+                let candidatePortfolios =
+                    [ for _ in 1 .. nWeights ->
+                        let w = getRandomWeights nAssets
+                        let sharpe = getSharpe combination w returns
+                        { Assets = combination; Weights = w; Sharpe = sharpe } ]
+
+                let bestForCombination =
+                    candidatePortfolios
+                    |> List.maxBy (fun p -> p.Sharpe)
+
+                let newBest =
+                    if bestForCombination.Sharpe > best.Sharpe then bestForCombination else best
+
+                getBestSharpe rest newBest
+
+        let combinations = getCombinations assets nAssets
 
         let initialPortfolio = {
             Assets = []
@@ -89,4 +94,27 @@ module Core =
             Sharpe = System.Double.NegativeInfinity
         }
 
-        getBestSharpe assets combinations n initialPortfolio
+        getBestSharpe combinations initialPortfolio
+
+
+    let getBestSharpePar (assets: string list) (returns: Map<string, float list>) (nAssets: int) (nWeights: int) : Portfolio =
+        let combinations = getCombinations assets nAssets |> List.toArray
+
+        let initialPortfolio = {
+            Assets = []
+            Weights = []
+            Sharpe = System.Double.NegativeInfinity
+        }
+
+        let portfolios =
+            combinations
+            |> Array.Parallel.map (fun combination ->
+                [ for _ in 1 .. nWeights ->
+                    let weights = getRandomWeights nAssets
+                    let sharpe = getSharpe combination weights returns
+                    { Assets = combination; Weights = weights; Sharpe = sharpe } ]
+                |> List.maxBy (fun p -> p.Sharpe))
+
+        portfolios
+        |> Array.fold (fun best p -> if p.Sharpe > best.Sharpe then p else best) initialPortfolio
+

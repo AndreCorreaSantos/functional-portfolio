@@ -58,6 +58,7 @@ class Program
         var returns = readCsv(filePath);
         var assetNames = new List<string>(returns.Keys);
         int numberAssets = 26;
+        int numberW = 10;
 
         var fsharpAssetNames = ListModule.OfSeq(assetNames);
         var fsharpWeights = Core.getRandomWeights(numberAssets);
@@ -73,7 +74,7 @@ class Program
     
         var stopwatch = Stopwatch.StartNew(); 
 
-        var portfolio = Core.getBestSharpe(fsharpAssetNames, fsharpReturns, numberAssets);
+        var portfolio = Core.getBestSharpePar(fsharpAssetNames, fsharpReturns, numberAssets, numberW);
 
         stopwatch.Stop();
         
