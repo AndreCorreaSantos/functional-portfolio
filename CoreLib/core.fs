@@ -6,40 +6,47 @@ module Core =
     open System.Linq
 
     type Portfolio = {
-        Assets: string list
-        Weights: float list
+        Assets: string[]
+        Weights: float[]
         Sharpe: float
     }
 
-    let transpose (matrix: 'a list list) : 'a list list =
-                if matrix.IsEmpty then []
-                else
-                    let matrixArr = matrix |> List.map List.toArray |> List.toArray
-                    let rowCount = matrixArr.Length
-                    let colCount = matrixArr.[0].Length
-                    [ for j in 0 .. colCount - 1 ->
-                        [ for i in 0 .. rowCount - 1 -> matrixArr.[i].[j] ] ]
 
-    let getSharpe (weights: float list) (transposedReturns: float list list) =
+    let transpose (matrix: 'a[][]) : 'a[][] =
+        if matrix.Length = 0 then [||]
+        else
+            let rowCount = matrix.Length
+            let colCount = matrix.[0].Length
+            Array.init colCount (fun j ->
+                Array.init rowCount (fun i -> matrix.[i].[j]))
 
-        let dailyReturns =
-            transposedReturns
-            |> List.map (fun dailyRow ->
-                List.zip dailyRow weights
-                |> List.sumBy (fun (ret, w) -> ret * w))
 
-        let mean = List.average dailyReturns
+    let getSharpe (weights: float[]) (transposedReturns: float[][]) =
 
-        let stdDev =
-            dailyReturns
-            |> List.map (fun x -> (x - mean) ** 2.0)
-            |> List.average
-            |> sqrt
+        // compute daily returns in a single pass
+        let dailyReturns = 
+            Array.init transposedReturns.Length (fun i ->
+                let dailyRow = transposedReturns.[i]
+                Array.fold2 (fun acc r w -> acc + r * w) 0.0 dailyRow weights
+            )
 
+        // compute mean and standard deviation in one pass
+        let sum, sumSq = 
+            Array.fold (fun (s, s2) r -> 
+                let s' = s + r
+                (s', s2 + r * r)) (0.0, 0.0) dailyReturns
+
+        let n = float dailyReturns.Length
+        let mean = sum / n
+        let variance = (sumSq / n) - (mean * mean)
+        let stdDev = sqrt variance
+
+        // Annualize
         let annualizedReturn = mean * 252.0
         let annualizedStd = stdDev * sqrt 252.0
 
         annualizedReturn / annualizedStd
+
 
     // wrapper to inner recursive function
     let getCombinations (assets: string list) (n: int) : string list list =
@@ -55,40 +62,41 @@ module Core =
                     withoutX
         comb n assets [] []
 
-    let getRandomWeights (n: int) : float list =
-        let rnd = Random()
-        let rawWeights = [for _ in 1 .. n -> rnd.NextDouble()]
-        let total = rawWeights |> List.sum
-        rawWeights |> List.map (fun w -> w / total)
+    let rnd = System.Threading.ThreadLocal(fun () -> Random())
+
+    let getRandomWeights (n: int) : float[] =
+        let rawWeights = Array.init n (fun _ -> rnd.Value.NextDouble())
+        let total = Array.sum rawWeights
+        rawWeights |> Array.map (fun w -> w / total)
+
 
 
     let getBestSharpePar (assets: string list) (returns: Map<string, float list>) (nAssets: int) (nWeights: int) : Portfolio =
-        let combinations = getCombinations assets nAssets |> List.toArray
+        let combinations = getCombinations assets nAssets |> List.map List.toArray |> List.toArray
 
         let initialPortfolio = {
-            Assets = []
-            Weights = []
+            Assets = [||]
+            Weights = [||]
             Sharpe = System.Double.NegativeInfinity
         }
 
         let portfolios =
             combinations
-            // parallelize the computation of combinations
             |> Array.Parallel.map (fun combination ->
-                // sequentially compute the best sharpe (over weights)
-                let assetReturns = combination|> List.map (fun asset -> Map.find asset returns) // precomputing asset returns for this combination
-                let transposedReturns = transpose assetReturns
+                // Precompute and transpose returns
+                let assetReturns = combination |> Array.map (fun asset -> Map.find asset returns |> List.toArray)
+                let transposedReturns = transpose assetReturns  
 
-                let bestPortfolio = 
-                    let portfolios = 
-                        [| for _ in 1 .. nWeights do
-                            let weights = getRandomWeights nAssets
-                            let sharpe = getSharpe weights transposedReturns
-                            { Assets = combination; Weights = weights; Sharpe = sharpe } |]
-                            
-                    portfolios |> Array.maxBy (fun p -> p.Sharpe)
+                let bestPortfolio =
+                    Array.init nWeights (fun _ ->
+                        let weights = getRandomWeights combination.Length
+                        let sharpe = getSharpe weights transposedReturns
+                        { Assets = combination; Weights = weights; Sharpe = sharpe })
+                    |> Array.maxBy (fun p -> p.Sharpe)
+
                 bestPortfolio
             )
 
         portfolios
         |> Array.fold (fun best p -> if p.Sharpe > best.Sharpe then p else best) initialPortfolio
+
