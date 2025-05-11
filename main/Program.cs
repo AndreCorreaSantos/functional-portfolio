@@ -82,7 +82,7 @@ class Program
         var returns = readCsv(filePath);
         var assetNames = new List<string>(returns.Keys);
         int numberAssets = 25;
-        int numberW = 20;
+        int numberW = 100;
 
         var fsharpAssetNames = ListModule.OfSeq(assetNames);
         var fsharpWeights = Core.getRandomWeights(numberAssets);
