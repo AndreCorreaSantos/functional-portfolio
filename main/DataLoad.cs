@@ -5,6 +5,8 @@ using System.IO;
 using CsvHelper;
 using CsvHelper.Configuration;
 using System.Linq;
+using Microsoft.FSharp.Collections;
+using CoreLib;
 
 namespace Main
 {
@@ -74,6 +76,26 @@ namespace Main
                     csv.NextRecord();
                 }
             }
+        }
+
+        // Method to convert raw returns data into F#-compatible ReturnsData
+        public static ReturnsData ConvertToReturnsData(Dictionary<string, List<float>> rawReturns)
+        {
+            // Convert AssetNames to FSharpList<string>
+            var fsharpAssetNames = ListModule.OfSeq(rawReturns.Keys);
+
+            // Convert each List<float> to FSharpList<double> and create FSharpMap<string, FSharpList<double>>
+            var fsharpReturns = MapModule.OfSeq(
+                rawReturns.Select(kvp =>
+                    new Tuple<string, FSharpList<double>>(
+                        kvp.Key,
+                        ListModule.OfSeq(kvp.Value.Select(v => (double)v))  // Convert float to double
+                    )
+                )
+            );
+
+            // Properly return ReturnsData using constructor
+            return new ReturnsData(fsharpAssetNames, fsharpReturns);
         }
     }
 }
