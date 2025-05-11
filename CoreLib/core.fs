@@ -1,9 +1,9 @@
 namespace CoreLib
-
-module Core =
+module Core = 
 
     open System
     open System.Collections.Generic
+    open System.Linq
 
     type Portfolio = {
         Assets: string list
@@ -11,41 +11,43 @@ module Core =
         Sharpe: float
     }
 
-    // function to get sharpe for a given set of assets and weights, rfr is not considered as sharpe is being used to compare different portfolios 
+    
     let getSharpe (assets: string list) (weights: float list) (data: Map<string, float list>) =
-        let weightsArr = weights |> List.toArray
         let assetReturns =
             assets
-            |> List.map (fun asset -> Map.find asset data |> List.toArray)
-            |> Array.ofList
+            |> List.map (fun asset -> Map.find asset data)
 
-        let days = assetReturns.[0].Length
-        let dailyReturns = Array.zeroCreate days
+        // recursive function to transpose a list of lists
+        let rec transpose matrix =
+            match List.filter (fun row -> row <> []) matrix with
+            | [] -> []
+            | rows -> List.map List.head rows :: transpose (List.map List.tail rows)
+        // understand better why we have to transpose the matrix here   
+        let dailyReturns =
+            assetReturns
+            |> transpose
+            |> List.map (fun dailyRow ->
+                List.zip dailyRow weights
+                |> List.sumBy (fun (ret, w) -> ret * w))
 
-        for day = 0 to days - 1 do
-            let mutable sum = 0.0
-            for asset = 0 to weightsArr.Length - 1 do
-                sum <- sum + weightsArr.[asset] * assetReturns.[asset].[day]
-            dailyReturns.[day] <- sum
+        let mean = List.average dailyReturns
 
-        let mean = Array.average dailyReturns
-        let stdDev = dailyReturns |> Array.averageBy (fun x -> (x - mean) ** 2.0) |> sqrt
+        let stdDev =
+            dailyReturns
+            |> List.map (fun x -> (x - mean) ** 2.0)
+            |> List.average
+            |> sqrt
 
         let annualizedReturn = mean * 252.0
         let annualizedStd = stdDev * sqrt 252.0
 
         annualizedReturn / annualizedStd
 
-    // recursive function to transpose a list of lists
-    let rec transpose (matrix: float list list) : float list list =
-        let matrixArr = matrix |> List.map List.toArray |> Array.ofList
-        let rows = matrixArr.Length
-        let cols = matrixArr.[0].Length
-        [ for j in 0 .. cols - 1 ->
-            [ for i in 0 .. rows - 1 -> matrixArr.[i].[j] ] ]
 
     // wrapper to inner recursive function
     let getCombinations (assets: string list) (n: int) : string list list =
+        //  recursive function to generate combinations -> sort of backtracking that generates all combinations without their permutations
+        // k is the number of elements to choose from
         let rec comb k list =
             match k, list with
             | 0, _ -> [ [] ]
@@ -56,30 +58,33 @@ module Core =
                 withX @ withoutX
         comb n assets
 
-    // function to generate random normalized weights
     let getRandomWeights (n: int) : float list =
         let rnd = Random()
         let rawWeights = [for _ in 1 .. n -> rnd.NextDouble()]
         let total = rawWeights |> List.sum
         rawWeights |> List.map (fun w -> w / total)
 
-    // recursive function to iterate over all combinations of assets and return the best sharpe
-    let getBestSharpeSeq (assets: string list) (returns : Map<string, float list>) (n : int) : Portfolio = 
 
-        let rec getBestSharpe (combinations : string list list) (best: Portfolio) : Portfolio  =
+    let getBestSharpeSeq (assets: string list) (returns : Map<string, float list>) (n : int) : Portfolio = 
+        // recursive function to iterate over all combinations of assets and return the best sharpe
+        let rec getBestSharpe (assets: string list) (combinations : string list list) (n : int) (best: Portfolio) : Portfolio  =
             match combinations with
             | [] -> best
             | combination::rest -> 
-                let w = getRandomWeights n
+                let w = getRandomWeights n // for now only one weight per combination COME BACK LATER AND TEST 1000 RANDOM W PER COMBINATION
                 let sharpe = getSharpe combination w returns
-                let newBest =
-                    if sharpe > best.Sharpe then
-                        { Assets = combination; Weights = w; Sharpe = sharpe }
-                    else
-                        best
-                getBestSharpe rest newBest
-
+                if sharpe > best.Sharpe then
+                    let newBest = { Assets = combination; Weights = w; Sharpe = sharpe }
+                    getBestSharpe assets rest n newBest
+                else
+                    getBestSharpe assets rest n best
+                
         let combinations = getCombinations assets n
 
-        let initialPortfolio = { Assets = []; Weights = []; Sharpe = System.Double.NegativeInfinity }
-        getBestSharpe combinations initialPortfolio
+        let initialPortfolio = {
+            Assets = []
+            Weights = []
+            Sharpe = System.Double.NegativeInfinity
+        }
+
+        getBestSharpe assets combinations n initialPortfolio
