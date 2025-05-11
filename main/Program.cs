@@ -57,7 +57,7 @@ class Program
         string filePath = "dow_returns_2024_h2.csv";
         var returns = readCsv(filePath);
         var assetNames = new List<string>(returns.Keys);
-        int numberAssets = 25;
+        int numberAssets = 26;
 
         var fsharpAssetNames = ListModule.OfSeq(assetNames);
         var fsharpWeights = Core.getRandomWeights(numberAssets);
@@ -81,10 +81,10 @@ class Program
         {
             Console.Write($"asset name: {i} \n");
         }
-        Console.WriteLine($"\nasset names: {assetNames.Count}\n");
-        Console.WriteLine($"\nnumber assets: {numberAssets}\n");
-        Console.WriteLine($"\nnumber combinations: {portfolio.Length}\n");
-        Console.WriteLine($"\ncomb 0: {portfolio.First()}\n");
+        Console.WriteLine($"\nasset names: {portfolio.Assets}\n");
+        Console.WriteLine($"\nn assets: {portfolio.Assets.Length}");
+        Console.WriteLine($"\nweights : {portfolio.Weights}\n");
+        Console.WriteLine($"\nsharpe : {portfolio.Sharpe}\n");
         Console.WriteLine($"\nExecution Time: {stopwatch.Elapsed.TotalSeconds:F3} seconds\n");
 
         // var assets = portfolio.Assets.ToList();

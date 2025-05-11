@@ -67,13 +67,13 @@ module Core =
         rawWeights |> List.map (fun w -> w / total)
 
 
-    let getBestSharpe (assets: string list) (returns : Map<string, float list>) (n : int) : string list list = 
+    let getBestSharpe (assets: string list) (returns : Map<string, float list>) (n : int) : Portfolio = 
         // recursive function to iterate over all combinations of assets and return the best sharpe
         let rec getBestSharpe (assets: string list) (combinations : string list list) (n : int) (best: Portfolio) : Portfolio  =
             match combinations with
             | [] -> best
             | combination::rest -> 
-                let w = getRandomWeights n // for now only one weight per combination COME BACK LATER AND TEST 1000 RANDOM W PER COMBINATION
+                let w = getRandomWeights n 
                 let sharpe = getSharpe combination w returns
                 if sharpe > best.Sharpe then
                     let newBest = { Assets = combination; Weights = w; Sharpe = sharpe }
@@ -81,13 +81,12 @@ module Core =
                 else
                     getBestSharpe assets rest n best
         
-        getCombinations assets n
-        // let combinations = getCombinations assets n
+        let combinations = getCombinations assets n
 
-        // let initialPortfolio = {
-        //     Assets = []
-        //     Weights = []
-        //     Sharpe = System.Double.NegativeInfinity
-        // }
+        let initialPortfolio = {
+            Assets = []
+            Weights = []
+            Sharpe = System.Double.NegativeInfinity
+        }
 
-        // getBestSharpe assets combinations n initialPortfolio
+        getBestSharpe assets combinations n initialPortfolio
