@@ -34,7 +34,9 @@ module Core =
 
         annualizedReturn / annualizedStd
     
-    let getBestSharpeSeq (assets: string list) (returns: Map<string, float list>) (nAssets: int) (nWeights: int) : Portfolio =
+    let getBestSharpeSeq (returnsData:ReturnsData) (nAssets: int) (nWeights: int) : Portfolio =
+            let assets = returnsData.AssetNames
+            let returns = returnsData.Returns
             let combinations = getCombinations assets nAssets |> List.map List.toArray |> List.toArray
 
             let initialPortfolio = {
@@ -66,7 +68,9 @@ module Core =
 
 
 
-    let getBestSharpePar (assets: string list) (returns: Map<string, float list>) (nAssets: int) (nWeights: int) : Portfolio =
+    let getBestSharpePar (returnsData:ReturnsData) (nAssets: int) (nWeights: int) : Portfolio =
+        let assets = returnsData.AssetNames
+        let returns = returnsData.Returns
         let combinations = getCombinations assets nAssets |> List.map List.toArray |> List.toArray
 
         let initialPortfolio = {

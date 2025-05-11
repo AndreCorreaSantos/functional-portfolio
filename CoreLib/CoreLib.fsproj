@@ -5,9 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="types.fs" />
-    <Compile Include="helpers.fs"/>
-    <Compile Include="core.fs"/>
+    <Compile Include="Types.fs" />
+    <Compile Include="Helpers.fs"/>
+    <Compile Include="Core.fs"/>
   </ItemGroup>
 
   <ItemGroup>
