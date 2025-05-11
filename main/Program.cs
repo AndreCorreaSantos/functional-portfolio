@@ -51,14 +51,38 @@ class Program
         }
     }
 
+    static void WritePortfolioToCsv(string filePath, List<string> assetNames, List<double> weights, double sharpeRatio, double executionTime)
+    {
+        using (var writer = new StreamWriter(filePath))
+        using (var csv = new CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture)))
+        {
+            // Write header
+            csv.WriteField("Asset Name");
+            csv.WriteField("Weight");
+            csv.WriteField("Sharpe Ratio");
+            csv.WriteField("Execution Time (seconds)");
+            csv.NextRecord();
+
+            // Write asset names, weights, Sharpe ratio, and execution time
+            for (int i = 0; i < assetNames.Count; i++)
+            {
+                csv.WriteField(assetNames[i]);
+                csv.WriteField(weights[i]);
+                csv.WriteField(sharpeRatio);
+                csv.WriteField(executionTime);
+                csv.NextRecord();
+            }
+        }
+    }
+
 
     static void Main(string[] args)
     {
         string filePath = "dow_returns_2024_h2.csv";
         var returns = readCsv(filePath);
         var assetNames = new List<string>(returns.Keys);
-        int numberAssets = 26;
-        int numberW = 10;
+        int numberAssets = 25;
+        int numberW = 20;
 
         var fsharpAssetNames = ListModule.OfSeq(assetNames);
         var fsharpWeights = Core.getRandomWeights(numberAssets);
@@ -78,26 +102,16 @@ class Program
 
         stopwatch.Stop();
         
-        foreach (var i in assetNames)
-        {
-            Console.Write($"asset name: {i} \n");
-        }
-        Console.WriteLine($"\nasset names: {portfolio.Assets}\n");
-        Console.WriteLine($"\nn assets: {portfolio.Assets.Length}");
-        Console.WriteLine($"\nweights : {portfolio.Weights}\n");
-        Console.WriteLine($"\nsharpe : {portfolio.Sharpe}\n");
-        Console.WriteLine($"\nExecution Time: {stopwatch.Elapsed.TotalSeconds:F3} seconds\n");
+        // Convert portfolio data to lists for writing to CSV
+        var assets = portfolio.Assets.ToList();
+        var weights = portfolio.Weights.ToList();
+        var sharpeValue = portfolio.Sharpe;
 
-        // var assets = portfolio.Assets.ToList();
-        // var weights = portfolio.Weights.ToList();
-        // var sharpeValue = portfolio.Sharpe;
-
-        // Console.WriteLine("Best Portfolio:");
-        // for (int i = 0; i < assets.Count; i++)
-        // {
-        //     Console.WriteLine($"  {assets[i]}: {weights[i]:F4}");
-        // }
-
-        // Console.WriteLine($"Sharpe Ratio: {sharpeValue:F4}");
+        // Write the portfolio information to a CSV file, including execution time
+        string outputCsvPath = "portfolio_output.csv";
+        WritePortfolioToCsv(outputCsvPath, assets, weights, sharpeValue, stopwatch.Elapsed.TotalSeconds);
+        
+        Console.WriteLine($"Portfolio written to {outputCsvPath}");
+        Console.WriteLine($"Execution Time: {stopwatch.Elapsed.TotalSeconds:F3} seconds");
     }
 }

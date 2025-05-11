@@ -108,13 +108,19 @@ module Core =
 
         let portfolios =
             combinations
+            // parallelize the computation of combinations
             |> Array.Parallel.map (fun combination ->
-                [ for _ in 1 .. nWeights ->
-                    let weights = getRandomWeights nAssets
-                    let sharpe = getSharpe combination weights returns
-                    { Assets = combination; Weights = weights; Sharpe = sharpe } ]
-                |> List.maxBy (fun p -> p.Sharpe))
+                // sequentially compute the best sharpe (over weights)
+                let bestPortfolio = 
+                    let portfolios = 
+                        [| for _ in 1 .. nWeights do
+                            let weights = getRandomWeights nAssets
+                            let sharpe = getSharpe combination weights returns
+                            { Assets = combination; Weights = weights; Sharpe = sharpe } |]
+                            
+                    portfolios |> Array.maxBy (fun p -> p.Sharpe)
+                bestPortfolio
+            )
 
         portfolios
         |> Array.fold (fun best p -> if p.Sharpe > best.Sharpe then p else best) initialPortfolio
-
