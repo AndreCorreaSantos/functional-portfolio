@@ -9,7 +9,8 @@
       "PortfolioOptimization/1.0.0": {
         "dependencies": {
           "CoreLib": "1.0.0",
-          "CsvHelper": "33.0.1"
+          "CsvHelper": "33.0.1",
+          "FSharp.Core": "9.0.101"
         },
         "runtime": {
           "PortfolioOptimization.dll": {}

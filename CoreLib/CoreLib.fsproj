@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="types.fs" />
+    <Compile Include="helpers.fs"/>
     <Compile Include="core.fs"/>
   </ItemGroup>
 

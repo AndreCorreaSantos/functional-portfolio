@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Reference the F# project -->
     <ProjectReference Include="..\CoreLib\CoreLib.fsproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="33.0.1" />
+    <PackageReference Include="FSharp.Core" Version="9.0.101" />
   </ItemGroup>
 
 </Project>

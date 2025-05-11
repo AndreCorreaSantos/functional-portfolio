@@ -121,6 +121,10 @@
             "CsvHelper": {
               "target": "Package",
               "version": "[33.0.1, )"
+            },
+            "FSharp.Core": {
+              "target": "Package",
+              "version": "[9.0.101, )"
             }
           },
           "imports": [

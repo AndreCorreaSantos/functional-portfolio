@@ -4,22 +4,9 @@ module Core =
     open System
     open System.Collections.Generic
     open System.Linq
+    open CoreLib.Helpers
 
-    type Portfolio = {
-        Assets: string[]
-        Weights: float[]
-        Sharpe: float
-    }
-
-
-    let transpose (matrix: 'a[][]) : 'a[][] =
-        if matrix.Length = 0 then [||]
-        else
-            let rowCount = matrix.Length
-            let colCount = matrix.[0].Length
-            Array.init colCount (fun j ->
-                Array.init rowCount (fun i -> matrix.[i].[j]))
-
+    
 
     let getSharpe (weights: float[]) (transposedReturns: float[][]) =
 
@@ -46,29 +33,36 @@ module Core =
         let annualizedStd = stdDev * sqrt 252.0
 
         annualizedReturn / annualizedStd
+    
+    let getBestSharpeSeq (assets: string list) (returns: Map<string, float list>) (nAssets: int) (nWeights: int) : Portfolio =
+            let combinations = getCombinations assets nAssets |> List.map List.toArray |> List.toArray
 
+            let initialPortfolio = {
+                Assets = [||]
+                Weights = [||]
+                Sharpe = System.Double.NegativeInfinity
+            }
 
-    // wrapper to inner recursive function
-    let getCombinations (assets: string list) (n: int) : string list list =
-        let rec comb (k: int) (list: string list) (current: string list) (acc: string list list) =
-            match k, list with
-            | 0, _ -> current :: acc
-            | _, [] -> acc
-            | k, x::xs ->
-                if xs.Length + 1 < k then comb k xs current acc
-                else
-                    let withX = comb (k - 1) xs (x :: current) acc
-                    let withoutX = comb k xs current withX
-                    withoutX
-        comb n assets [] []
+            let portfolios =
+                combinations
+                |> Array.map (fun combination ->
+                    // precompute and transpose returns
+                    let assetReturns = combination |> Array.map (fun asset -> Map.find asset returns |> List.toArray)
+                    let transposedReturns = transpose assetReturns  
 
-    // thread safe random array generator
-    let rnd = System.Threading.ThreadLocal(fun () -> Random())
+                    let bestPortfolio =
+                        Array.init nWeights (fun _ ->
+                            let weights = getRandomWeights combination.Length
+                            let sharpe = getSharpe weights transposedReturns
+                            { Assets = combination; Weights = weights; Sharpe = sharpe })
+                        |> Array.maxBy (fun p -> p.Sharpe)
 
-    let getRandomWeights (n: int) : float[] =
-        let rawWeights = Array.init n (fun _ -> rnd.Value.NextDouble())
-        let total = Array.sum rawWeights
-        rawWeights |> Array.map (fun w -> w / total)
+                    bestPortfolio
+                )
+
+            portfolios
+            |> Array.fold (fun best p -> if p.Sharpe > best.Sharpe then p else best) initialPortfolio
+
 
 
 
@@ -84,7 +78,7 @@ module Core =
         let portfolios =
             combinations
             |> Array.Parallel.map (fun combination ->
-                // Precompute and transpose returns
+                // precompute and transpose returns
                 let assetReturns = combination |> Array.map (fun asset -> Map.find asset returns |> List.toArray)
                 let transposedReturns = transpose assetReturns  
 
