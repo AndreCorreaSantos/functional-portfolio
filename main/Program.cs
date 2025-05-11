@@ -54,7 +54,7 @@ class Program
         string filePath = "dow_returns_2024_h2.csv";
         var returns = readCsv(filePath);
         var assetNames = new List<string>(returns.Keys);
-        int numberAssets = 6;
+        int numberAssets = 4;
 
         var fsharpAssetNames = ListModule.OfSeq(assetNames);
         var fsharpWeights = Core.getRandomWeights(numberAssets);
