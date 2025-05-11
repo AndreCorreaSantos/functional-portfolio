@@ -19,7 +19,7 @@ namespace Main
             ReturnsData returnsData = DataLoad.ConvertToReturnsData(rawReturns);
 
             int numberAssets = 25;
-            int numberW = 2;
+            int numberW = 1000;
 
             // // parallel profiling getbestsharpeseq
             Profiler.ParallelProfile(Core.getBestSharpeSeq, returnsData, numberAssets, numberW, "log/sequential", "sequential");
