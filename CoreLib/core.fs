@@ -10,18 +10,21 @@ module Core =
         Weights: float list
         Sharpe: float
     }
-
     
     let getSharpe (assets: string list) (weights: float list) (data: Map<string, float list>) =
         let assetReturns =
             assets
             |> List.map (fun asset -> Map.find asset data)
 
-        // recursive function to transpose a list of lists
-        let rec transpose matrix =
-            match List.filter (fun row -> row <> []) matrix with
-            | [] -> []
-            | rows -> List.map List.head rows :: transpose (List.map List.tail rows)
+        let transpose (matrix: 'a list list) : 'a list list =
+            if matrix.IsEmpty then []
+            else
+                let matrixArr = matrix |> List.map List.toArray |> List.toArray
+                let rowCount = matrixArr.Length
+                let colCount = matrixArr.[0].Length
+                [ for j in 0 .. colCount - 1 ->
+                    [ for i in 0 .. rowCount - 1 -> matrixArr.[i].[j] ] ]
+
         // understand better why we have to transpose the matrix here   
         let dailyReturns =
             assetReturns
@@ -42,7 +45,6 @@ module Core =
         let annualizedStd = stdDev * sqrt 252.0
 
         annualizedReturn / annualizedStd
-
 
     // wrapper to inner recursive function
     let getCombinations (assets: string list) (n: int) : string list list =
