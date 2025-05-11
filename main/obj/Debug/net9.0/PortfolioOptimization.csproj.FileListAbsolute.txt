@@ -39,3 +39,4 @@
 /home/andre/funcional/portfolio-optimization/main/obj/Debug/net9.0/PortfolioOptimization.genruntimeconfig.cache
 /home/andre/funcional/portfolio-optimization/main/obj/Debug/net9.0/ref/PortfolioOptimization.dll
 /home/andre/funcional/portfolio-optimization/main/bin/Debug/net9.0/CsvHelper.dll
+/home/andre/funcional/portfolio-optimization/main/obj/Debug/net9.0/PortfolioOptimization.sourcelink.json

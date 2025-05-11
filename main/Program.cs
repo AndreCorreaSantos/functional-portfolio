@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -7,7 +8,6 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using CoreLib;
 using Microsoft.FSharp.Collections;
-using Microsoft.FSharp.Core;
 
 class Program
 {
@@ -54,13 +54,11 @@ class Program
         string filePath = "dow_returns_2024_h2.csv";
         var returns = readCsv(filePath);
         var assetNames = new List<string>(returns.Keys);
-        float rfr = 0.0f;
-        int numberAssets = 25;
+        int numberAssets = 6;
 
         var fsharpAssetNames = ListModule.OfSeq(assetNames);
         var fsharpWeights = Core.getRandomWeights(numberAssets);
-        // var combinations = Core.getCombinations(fsharpAssetNames, numberAssets);
-        var selectedAssets = ListModule.OfSeq(assetNames.GetRange(0, 25));
+        var selectedAssets = ListModule.OfSeq(assetNames.GetRange(0, numberAssets));
         var fsharpReturns = MapModule.OfSeq(
             returns.Select(kvp =>
                 new Tuple<string, FSharpList<double>>(
@@ -69,8 +67,25 @@ class Program
                 )
             )
         );
+    
+        var stopwatch = Stopwatch.StartNew(); 
 
-        var sharpe = Core.getBestSharpe(fsharpAssetNames, fsharpReturns, rfr, numberAssets);
-        Console.WriteLine($"SHARPE {sharpe}");
+        var portfolio = Core.getBestSharpeSeq(fsharpAssetNames, fsharpReturns, numberAssets);
+
+        stopwatch.Stop();
+
+        Console.WriteLine($"\nExecution Time: {stopwatch.Elapsed.TotalSeconds:F3} seconds\n");
+
+        var assets = portfolio.Assets.ToList();
+        var weights = portfolio.Weights.ToList();
+        var sharpeValue = portfolio.Sharpe;
+
+        Console.WriteLine("Best Portfolio:");
+        for (int i = 0; i < assets.Count; i++)
+        {
+            Console.WriteLine($"  {assets[i]}: {weights[i]:F4}");
+        }
+
+        Console.WriteLine($"Sharpe Ratio: {sharpeValue:F4}");
     }
 }
