@@ -81,7 +81,7 @@ class Program
         string filePath = "dow_returns_2024_h2.csv";
         var returns = readCsv(filePath);
         var assetNames = new List<string>(returns.Keys);
-        int numberAssets = 25;
+        int numberAssets = 27;
         int numberW = 100;
 
         var fsharpAssetNames = ListModule.OfSeq(assetNames);

@@ -10,24 +10,20 @@ module Core =
         Weights: float list
         Sharpe: float
     }
-    
-    let getSharpe (assets: string list) (weights: float list) (data: Map<string, float list>) =
-        let assetReturns =
-            assets
-            |> List.map (fun asset -> Map.find asset data)
 
-        let transpose (matrix: 'a list list) : 'a list list =
-            if matrix.IsEmpty then []
-            else
-                let matrixArr = matrix |> List.map List.toArray |> List.toArray
-                let rowCount = matrixArr.Length
-                let colCount = matrixArr.[0].Length
-                [ for j in 0 .. colCount - 1 ->
-                    [ for i in 0 .. rowCount - 1 -> matrixArr.[i].[j] ] ]
+    let transpose (matrix: 'a list list) : 'a list list =
+                if matrix.IsEmpty then []
+                else
+                    let matrixArr = matrix |> List.map List.toArray |> List.toArray
+                    let rowCount = matrixArr.Length
+                    let colCount = matrixArr.[0].Length
+                    [ for j in 0 .. colCount - 1 ->
+                        [ for i in 0 .. rowCount - 1 -> matrixArr.[i].[j] ] ]
+
+    let getSharpe (weights: float list) (transposedReturns: float list list) =
 
         let dailyReturns =
-            assetReturns
-            |> transpose
+            transposedReturns
             |> List.map (fun dailyRow ->
                 List.zip dailyRow weights
                 |> List.sumBy (fun (ret, w) -> ret * w))
@@ -65,37 +61,6 @@ module Core =
         let total = rawWeights |> List.sum
         rawWeights |> List.map (fun w -> w / total)
 
-    let getBestSharpeSeq (assets: string list) (returns: Map<string, float list>) (nAssets: int) (nWeights: int) : Portfolio = 
-        let rec getBestSharpe (combinations: string list list) (best: Portfolio) : Portfolio =
-            match combinations with
-            | [] -> best
-            | combination::rest ->
-                // Generate multiple weights and find best Sharpe among them
-                let candidatePortfolios =
-                    [ for _ in 1 .. nWeights ->
-                        let w = getRandomWeights nAssets
-                        let sharpe = getSharpe combination w returns
-                        { Assets = combination; Weights = w; Sharpe = sharpe } ]
-
-                let bestForCombination =
-                    candidatePortfolios
-                    |> List.maxBy (fun p -> p.Sharpe)
-
-                let newBest =
-                    if bestForCombination.Sharpe > best.Sharpe then bestForCombination else best
-
-                getBestSharpe rest newBest
-
-        let combinations = getCombinations assets nAssets
-
-        let initialPortfolio = {
-            Assets = []
-            Weights = []
-            Sharpe = System.Double.NegativeInfinity
-        }
-
-        getBestSharpe combinations initialPortfolio
-
 
     let getBestSharpePar (assets: string list) (returns: Map<string, float list>) (nAssets: int) (nWeights: int) : Portfolio =
         let combinations = getCombinations assets nAssets |> List.toArray
@@ -111,11 +76,14 @@ module Core =
             // parallelize the computation of combinations
             |> Array.Parallel.map (fun combination ->
                 // sequentially compute the best sharpe (over weights)
+                let assetReturns = combination|> List.map (fun asset -> Map.find asset returns) // precomputing asset returns for this combination
+                let transposedReturns = transpose assetReturns
+
                 let bestPortfolio = 
                     let portfolios = 
                         [| for _ in 1 .. nWeights do
                             let weights = getRandomWeights nAssets
-                            let sharpe = getSharpe combination weights returns
+                            let sharpe = getSharpe weights transposedReturns
                             { Assets = combination; Weights = weights; Sharpe = sharpe } |]
                             
                     portfolios |> Array.maxBy (fun p -> p.Sharpe)
