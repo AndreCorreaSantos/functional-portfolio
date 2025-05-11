@@ -9,3 +9,4 @@
 /home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/refint/CoreLib.dll
 /home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/CoreLib.pdb
 /home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/ref/CoreLib.dll
+/home/andre/funcional/portfolio-optimization/CoreLib/obj/Debug/net9.0/CoreLib.sourcelink.json
