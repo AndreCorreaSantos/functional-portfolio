@@ -43,7 +43,7 @@ def batch_sharpe(returns, all_weights):
         w = all_weights[i]
         weighted_returns = returns @ w
         mean_ret = weighted_returns.mean()
-        std_ret = weighted_returns.std()
+        std_ret = np.sqrt(np.mean((weighted_returns - mean_ret) ** 2))
         annualized_ret = mean_ret * 252
         annualized_std = std_ret * np.sqrt(252)
         sharpes[i] = annualized_ret / annualized_std
