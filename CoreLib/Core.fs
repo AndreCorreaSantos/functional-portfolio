@@ -67,7 +67,7 @@ module Core =
 
 
 
-
+    // differences from getBestSharpeSeq are only Array.parallel.map and Array.parallel.init
     let getBestSharpePar (returnsData:ReturnsData) (nAssets: int) (nWeights: int) : Portfolio =
         let assets = returnsData.AssetNames
         let returns = returnsData.Returns
@@ -81,13 +81,13 @@ module Core =
 
         let portfolios =
             combinations
-            |> Array.Parallel.map (fun combination ->
+            |> Array.Parallel.map (fun combination -> // parallel outer loop
                 // precompute and transpose returns
                 let assetReturns = combination |> Array.map (fun asset -> Map.find asset returns |> List.toArray)
                 let transposedReturns = transpose assetReturns  
 
                 let bestPortfolio =
-                    Array.Parallel.init nWeights (fun _ ->
+                    Array.Parallel.init nWeights (fun _ -> // parallel inner loop
                         let weights = getRandomWeights combination.Length
                         let sharpe = getSharpe weights transposedReturns
                         { Assets = combination; Weights = weights; Sharpe = sharpe })

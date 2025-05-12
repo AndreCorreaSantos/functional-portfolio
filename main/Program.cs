@@ -21,7 +21,7 @@ namespace Main
             int numberAssets = 25;
             int numberW = 1000;
 
-            // // parallel profiling getbestsharpeseq
+            // parallel profiling getbestsharpeseq
             Profiler.ParallelProfile(Core.getBestSharpeSeq, returnsData, numberAssets, numberW, "log/sequential", "sequential");
 
             // sequentially profiling getbestsharpepar

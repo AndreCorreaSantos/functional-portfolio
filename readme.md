@@ -1,4 +1,26 @@
 
+## Functional Portfolio Optimization
+
+The goal of this repository was to build and evaluate the performance of 3 different implementations of a Monte Carlo sampling method which selects 25 amongst 30 of the assets available under the DOW Jones Industrial Average index and also their weight vector.
+
+The first implementation was devised in Python and used NumPy and Numba operations to parallelize and accelerate vectorized operations.
+
+The second and third implementations, which are the focus, leveraged C# and F# — C# manages the data load, data write, and profiling steps, and F# contains the algorithm logic, with the impurity isolated in the C# counterpart.
+
+The second implementation was purely sequential, and the third leverages inner and outer loop parallelism to speed up the process. As the function calls have no shared data or external data dependency, they are trivially parallelizable.
+
+## The Algorithm
+
+- Generate all combinations of 25 out of 30 assets under DOW
+- For each combination:
+  - Create 1000 random weight vectors (that represent the amount bought of each asset in the portfolio)
+  - For each weight vector:
+    - Evaluate the Sharpe ratio of that portfolio's returns over the second half of 2024
+- Return portfolio with highest Sharpe
+
+Finally, the best portfolio was evaluated in the first trimester of 2025.
+
+Although the project aims to find the best performing portfolio in a time interval, the true focus of this repository is to compare sequential and parallel implementations in C# and F#.
 
 ## Sharpe Explanation
 
@@ -104,6 +126,7 @@ The portfolio was evaluated over the next trimester, with linear trendlines fitt
   * Contains all of the F# code used in the project.
   * [`/CoreLib/Core.fs`](CoreLib/Core.fs): Contains the core functions of the project—those that calculate the Sharpe ratio sequentially, in parallel, and the `getSharpe` function that contains the Sharpe formula.
   * [`/CoreLib/Types.fs`](CoreLib/Types.fs): Contains the shared types between C# and F#.
+  * [`/CoreLib/Helpers.fs`](/CoreLib/Helpers.fs`): Contains helper functions - such as random number generators and combination generators.
 
 * [`/main`](main/)
 
