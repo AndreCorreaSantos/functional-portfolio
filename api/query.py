@@ -1,10 +1,8 @@
 import requests
 import pandas as pd
 
-# API endpoint URL
 API_URL = "http://127.0.0.1:8000/returns"
 
-# time range for the second half of 2024
 payload = {
     "start": "2024-08-01",
     "end": "2024-12-31"
@@ -22,7 +20,7 @@ try:
 
     df.index = pd.to_datetime(df.index)
 
-    output_file = "../dow_returns_2024_h2.csv"
+    output_file = "../data/dow_returns_2024_h2.csv"
     df.to_csv(output_file, index=True, index_label="Date")
 
     print(f"CSV file saved as {output_file}")

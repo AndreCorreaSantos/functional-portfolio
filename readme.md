@@ -105,6 +105,22 @@ All of the aforementioned implementations were evaluated 5 times and their times
 
 Although the Numba version remains the fastest, it is remarkable that even without access to highly efficient vectorized operations, the F# parallel implementation was able to achieve similar performance.
 
+## Selected Portfolio
+
+The best-performing portfolio identified during testing achieved the following metrics:
+
+**Sharpe Ratio:** `3.204`
+
+![Asset Weights](images/asset_weights.png)
+
+## Performance Over the Following Trimester
+
+The portfolio was evaluated over the next trimester, with linear trendlines fitted separately for each period (H2 2024 and T1 2025) to highlight performance trends.
+
+**Sharpe Ratio for 2025 T1:** `-0.002`
+
+![Portfolio Performance - 2025 T1](images/portfolio_graph.png)
+
 ### Honesty section:
 
 - GPT was used to consult interop between F# and C#, specifically to understand errors related to mismatching types. It was also used to ascertain whether the function used to generate combinations was as good as possible.
